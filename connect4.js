@@ -9,18 +9,18 @@ const WIDTH = 7
 const HEIGHT = 6
 
 let currPlayer = 1 // active player: 1 or 2
-const board = [] // array of rows, each row is array of cells  (board[y][x])
+let board = [] // array of rows, each row is array of cells  (board[y][x])
 
 /** makeBoard: create in-JS board structure:
  *    board = array of rows, each row is array of cells  (board[y][x])
  */
 
-function makeBoard(width, height) {
-  const makeRows = new Array(width).fill(null)
+function makeBoard() {
+  // const makeRows = new Array(WIDTH).fill(null)  [ended up being a bad idea]
 
-  for (let i = 0; i < height; i++) {
+  for (let i = 0; i < HEIGHT; i++) {
     // TODO: set "board" to empty HEIGHT x WIDTH matrix array
-    board.push(makeRows)
+    board.push(Array.from({ length: WIDTH}))
   }
   console.log(board)
 }
@@ -58,7 +58,12 @@ function makeHtmlBoard() {
 
 function findSpotForCol(x) {
   // TODO: write the real version of this, rather than always returning 0
-  return 0
+  for (let y = HEIGHT - 1; y >= 0; y--) {
+    if (!board[y][x]) {
+      return y;
+    }
+  }
+  return null;
 }
 
 /** placeInTable: update DOM to place piece into HTML table of board */
@@ -66,10 +71,10 @@ function findSpotForCol(x) {
 function placeInTable(y, x) {
   // TODO: make a div and insert into correct table cell
   let id = `${y}-${x}`
-  let cellToFill = document.getElementById(id)
-  let newPiece = document.createElement('div')
-  newPiece.classList.add('.piece', '.p1')
-  // newPiece.style.top = -50 * (y + 2);
+  const cellToFill = document.getElementById(id)
+  const newPiece = document.createElement('div')
+  newPiece.classList.add('piece', `p${currPlayer}`)
+  //  newPiece.style.top = -50 * (y + 2);  doesn't appear to have any effect
   cellToFill.append(newPiece)
   console.dir(cellToFill)
 }
@@ -91,12 +96,15 @@ function handleClick(evt) {
 
   // get next spot in column (if none, ignore click)
   let y = findSpotForCol(x)
-  if (y === null) {
+  if (y === null) {  //maybe change to undefined?
     return
   }
 
   // place piece in board and add to HTML table
   // TODO: add line to update in-memory board
+  console.log(board[y][x])
+
+  board[y][x]=currPlayer
   placeInTable(y, x)
 
   // check for win
@@ -106,9 +114,13 @@ function handleClick(evt) {
 
   // check for tie
   // TODO: check if all cells in board are filled; if so call, call endGame
+  if (board.every(row => row.every(cell => cell))) {
+    return endGame('Tie!');
+  }
 
   // switch players
   // TODO: switch currPlayer 1 <-> 2
+  currPlayer = currPlayer === 1 ? 2 : 1
 }
 
 /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -165,5 +177,5 @@ function checkForWin() {
   }
 }
 
-makeBoard(WIDTH, HEIGHT)
+makeBoard()
 makeHtmlBoard()
