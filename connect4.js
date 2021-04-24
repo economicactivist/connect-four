@@ -20,7 +20,7 @@ function makeBoard() {
 
   for (let i = 0; i < HEIGHT; i++) {
     // TODO: set "board" to empty HEIGHT x WIDTH matrix array
-    board.push(Array.from({ length: WIDTH}))
+    board.push(Array.from({ length: WIDTH }))
   }
   console.log(board)
 }
@@ -30,11 +30,17 @@ function makeBoard() {
 function makeHtmlBoard() {
   // TODO: get "htmlBoard" variable from the item in HTML w/ID of "board"
   const htmlBoard = document.querySelector('#board')
-  // TODO: add comment for this code
+  /*this section creates a table row that can receive click events at the top
+   of the table elememtn; the rest of the rows in table element won't be 
+   clickable. Because this is the only row "drawn" and appended so far
+   it will be appear at the top of the table*/
   const top = document.createElement('tr')
   top.setAttribute('id', 'column-top')
+  //note that the event listener is added to entire row instead of individual cells (td's)
   top.addEventListener('click', handleClick)
 
+  /*create cells for the top row and give an id to each cell, starting with zero and ending
+   with 6.  Append these cells to the top table row */
   for (let x = 0; x < WIDTH; x++) {
     let headCell = document.createElement('td')
     headCell.setAttribute('id', x)
@@ -42,7 +48,11 @@ function makeHtmlBoard() {
   }
   htmlBoard.append(top)
 
-  // TODO: add comment for this code
+  /* for each table row created, create and append seven cells.  Note that the
+   id of each cell in rows below the "column-top" row have two numbers instead of one.
+   The first number, represented by the "y" variable, indicates the row and the second, the "x", 
+   indicaates the column. Confusingly, this causes "y" to precede "x" here and 
+   throughout the script */
   for (let y = 0; y < HEIGHT; y++) {
     const row = document.createElement('tr')
     for (let x = 0; x < WIDTH; x++) {
@@ -50,6 +60,7 @@ function makeHtmlBoard() {
       cell.setAttribute('id', `${y}-${x}`)
       row.append(cell)
     }
+    //append below "column-top"
     htmlBoard.append(row)
   }
 }
@@ -57,17 +68,22 @@ function makeHtmlBoard() {
 /** findSpotForCol: given column x, return top empty y (null if filled) */
 
 function findSpotForCol(x) {
-  // TODO: write the real version of this, rather than always returning 0
+  /* TODO: start at the top and go down because it is easier to check the first true 
+   case than the last true case */
   for (let y = HEIGHT - 1; y >= 0; y--) {
     if (!board[y][x]) {
-      return y;
+      return y
     }
   }
-  return null;
+
+  /*if there there isn't a value at a row in the "x" column, return the row value. 
+   otherwise, return null (which implies all rows have a value becuase the first row has a value) */
+  return null
 }
 
 /** placeInTable: update DOM to place piece into HTML table of board */
-
+/*using the x value from the click event and y value returned from the findSpotForCol
+ function, create a div to be placed in the cell with the cooresponding y-x id */
 function placeInTable(y, x) {
   // TODO: make a div and insert into correct table cell
   let id = `${y}-${x}`
@@ -76,7 +92,6 @@ function placeInTable(y, x) {
   newPiece.classList.add('piece', `p${currPlayer}`)
   //  newPiece.style.top = -50 * (y + 2);  doesn't appear to have any effect
   cellToFill.append(newPiece)
-  console.dir(cellToFill)
 }
 
 /** endGame: announce game end */
@@ -89,22 +104,26 @@ function endGame(msg) {
 /** handleClick: handle click of column top to play piece */
 
 function handleClick(evt) {
-  // get x from ID of clicked cell
+  // get id of the cell from "#column-top"
   //what's the point of the "+" operator here?
   let x = +evt.target.id
   console.log(x)
 
   // get next spot in column (if none, ignore click)
   let y = findSpotForCol(x)
-  if (y === null) {  //maybe change to undefined?
+  if (y === null) {
     return
   }
 
   // place piece in board and add to HTML table
   // TODO: add line to update in-memory board
+  //function only makes it this far if a row was found in board (the in-memory array)
   console.log(board[y][x])
-
-  board[y][x]=currPlayer
+  /*assign a value of "1" or "2" to the row that corresponds to the column extracted from
+   evt.target.id */
+  board[y][x] = currPlayer
+  console.log(board)
+  //now that there is both an x and y value, the DOM can be updated
   placeInTable(y, x)
 
   // check for win
@@ -115,7 +134,7 @@ function handleClick(evt) {
   // check for tie
   // TODO: check if all cells in board are filled; if so call, call endGame
   if (board.every(row => row.every(cell => cell))) {
-    return endGame('Tie!');
+    return endGame('Tie!')
   }
 
   // switch players
@@ -130,7 +149,8 @@ function checkForWin() {
     // Check four cells to see if they're all color of current player
     //  - cells: list of four (y, x) cells
     //  - returns true if all are legal coordinates & all match currPlayer
-
+    /*Basically the upper and lower bounds of the arrays in the for loop (specifically,
+     horiz, vert, diagDR, and diagDL) will extend beyond legal coordinates on some iterations */
     return cells.every(
       ([y, x]) =>
         y >= 0 &&
